@@ -20,12 +20,14 @@ volatile static struct NVIC_GPIOInterruptDirectory GPIO_portInterrupts[6];
 volatile static struct NVIC_SSIInterruptDirectory SSI_moduleInterrupts[4];
 volatile static struct NVIC_UARTInterruptDirectory UART_moduleInterrupts[8];
 volatile static struct NVIC_GPTMInterruptDirectory GPTM_moduleInterrupts[12];
+volatile static struct NVIC_ADCInterruptDirectory ADC_moduleInterrupts[2][4];
 
 //InterruptNumber (bit in interrupt registers) : values
 static const HALF_WORD GPIO_InterruptNumber[] = {0, 1, 2, 3, 4, 30};
 static const HALF_WORD SSI_InterruptNumber[]  = {7, 34, 57, 58};
 static const HALF_WORD UART_InterruptNumber[] = {5, 6, 33, 59, 60, 61, 62, 63};
 static const HALF_WORD GPTM_InterruptNumber[] = {19, 21, 23, 35, 70, 92, 94, 96, 98, 100, 102, 104};
+static const HALF_WORD ADC_InterruptNumber[] = {14, 15, 16, 17, 48, 49, 50, 51};
 	
 static BYTE_ADDRESS GPIO_address[] = 
 		{((BYTE_ADDRESS)0x40004000)
@@ -66,6 +68,11 @@ static BYTE_ADDRESS GPTM_address[] =
 		,(BYTE_ADDRESS)0x4004E000
 		,(BYTE_ADDRESS)0x4004F000
 		};	
+static BYTE_ADDRESS ADC_address[] = 
+        {(BYTE_ADDRESS)0x40038000
+        ,(BYTE_ADDRESS)0x40039000
+        };   
+         
 		
 static const HALF_WORD GPIOICR = 0x41C;
 static const HALF_WORD GPIOMIS = 0x418;
@@ -75,6 +82,7 @@ static const HALF_WORD UARTICR = 0x044;
 static const HALF_WORD UARTMIS = 0x040;
 static const HALF_WORD GPTMICR = 0x024;
 static const HALF_WORD GPTMMIS = 0x020;
+static const HALF_WORD ADCISC  = 0x00C;
 		
 struct NVIC_interruptModule_GPIO* new_GPIOInterrupt(unsigned char port, unsigned char pin, Function f, InterruptSense edgeOrLevel, BothEdges orSingle_edge, EdgeLevel highOrLow){
 	struct NVIC_interruptModule_GPIO* retVal = malloc(sizeof *retVal);
@@ -328,6 +336,9 @@ void NVIC_registerGPTMInterrupt(struct NVIC_interruptModule_GPTM* module){
 			GPTM_moduleInterrupts[module->timerNumber].gptmInterrupts[((module->base[i].bit == 4)?3:module->base[i].bit)].a = module->base[i].f;
 	}
 }
+void NVIC_registerADCInterrupt(struct NVIC_interruptModule_ADC* module){
+    
+}
 void NVIC_callAppropriateGPIOHandle(unsigned char port){
 	unsigned char i;
 	unsigned char pin = 8;
@@ -408,6 +419,24 @@ void NVIC_callAppropriateGPTMHandle(unsigned char timerNumber, unsigned char aOr
 	}
 	NVIC_setPending(GPTM_InterruptNumber[timerNumber]+((aOrb)?1:0), DISABLE);
 }
+void ADC_callAppropriateADCHandle(unsigned char moduleNumber, unsigned char sequenceNumber){
+    unsigned char i;
+	unsigned char bit = 4;
+	HALF_WORD mis = read_halfWord(ADC_address[moduleNumber], ADCISC);
+	for(i = 0; i < 4; ++i)
+	{
+		if((mis&0x01) == 0x01)
+			bit = i;
+		mis = mis>>1;
+	}
+	if(bit < 4)
+	{
+		setBit_word(ADC_address[moduleNumber], ADCISC, bit, ENABLE);
+		ADC_moduleInterrupts[moduleNumber][sequenceNumber].adcInterrupts[bit]((moduleNumber*4)+sequenceNumber);
+	}
+	if(!read_byte(ADC_address[moduleNumber], ADCISC))
+		NVIC_setPending(ADC_InterruptNumber[moduleNumber], DISABLE);
+}
 //GPIO
 void GPIOPortA_Handler(void){ NVIC_callAppropriateGPIOHandle(0);}
 void GPIOPortB_Handler(void){ NVIC_callAppropriateGPIOHandle(1);}
@@ -454,4 +483,12 @@ void WideTimer4A_Handler(void){ NVIC_callAppropriateGPTMHandle(10, 0);}
 void WideTimer4B_Handler(void){ NVIC_callAppropriateGPTMHandle(10, 1);}
 void WideTimer5A_Handler(void){ NVIC_callAppropriateGPTMHandle(11, 0);}
 void WideTimer5B_Handler(void){ NVIC_callAppropriateGPTMHandle(11, 1);}
-	
+
+void ADC0Seq0_Handler(void){ ADC_callAppropriateADCHandle(0, 0);}
+void ADC0Seq1_Handler(void){ ADC_callAppropriateADCHandle(0, 1);}
+void ADC0Seq2_Handler(void){ ADC_callAppropriateADCHandle(0, 2);}
+void ADC0Seq3_Handler(void){ ADC_callAppropriateADCHandle(0, 3);}
+void ADC1Seq0_Handler(void){ ADC_callAppropriateADCHandle(0, 0);}
+void ADC1Seq1_Handler(void){ ADC_callAppropriateADCHandle(0, 1);}
+void ADC1Seq2_Handler(void){ ADC_callAppropriateADCHandle(0, 2);}
+void ADC1Seq3_Handler(void){ ADC_callAppropriateADCHandle(0, 3);}

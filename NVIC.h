@@ -65,6 +65,17 @@ struct NVIC_interruptModule_GPTM
 	bool timerMatch;
 	bool RTC;
 };
+struct NVIC_interruptModule_ADC
+{
+    unsigned char moduleNumber;
+    unsigned char sequenceNumber;
+    BYTE_ADDRESS moduleAddress;
+    
+    unsigned char numInterrupts;
+    struct NVIC_interruptModule* base;
+    bool DigitalComparatorInterrupt;
+    bool 
+};
 struct NVIC_GPIOInterruptDirectory
 {
 	Function pinInterrupts[8];
@@ -76,6 +87,10 @@ struct NVIC_SSIInterruptDirectory
 struct NVIC_UARTInterruptDirectory
 {
 	Function uartInterrupts[9];
+};
+struct NVIC_ADCInterruptDirectory
+{
+    Function adcInterrupts[5];
 };
 struct NVIC_GPTM_A_B
 {
