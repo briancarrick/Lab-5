@@ -5,7 +5,15 @@ Author: Jason Cronquist
 #ifndef JLib_h
 #define JLib_h
 
+#include <stdlib.h>
+#include <string.h>
+
 #define LANDSCAPE
+
+typedef struct {
+	char* value;
+	unsigned int length;
+} String;
 
 typedef enum {false, true} bool;
 typedef void (*Function)(unsigned char); 

@@ -472,6 +472,16 @@
               <FileType>1</FileType>
               <FilePath>.\DACTimer.c</FilePath>
             </File>
+            <File>
+              <FileName>Screen.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Screen.c</FilePath>
+            </File>
+            <File>
+              <FileName>font8x8.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\font8x8.c</FilePath>
+            </File>
           </Files>
         </Group>
       </Groups>

@@ -9,7 +9,7 @@ void startScreen(void);
 void setTextColor(Color color);
 void setBackgroundColor(Color color);
 
-void println(unsigned char* string, unsigned int length);
+void println(volatile char* string);
 void clearText(void);
 
 HALF_WORD getColorCode(Color color);

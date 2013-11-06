@@ -1,8 +1,11 @@
+#include <stdio.h>
 #include "ADC.H"
+#include "JLib.h"
 #include "UART.h"
 #include "SystemClock.h"
 #include "DACTimer.h"
 #include "SSI.h"
+#include "Screen.h"
 
 
 struct SSI_module *ssi;
@@ -10,23 +13,26 @@ struct SSI_module *ssi;
 static BYTE_ADDRESS ADC0 = ((BYTE_ADDRESS)0x40038000); 
 static BYTE_ADDRESS TIMER1 = ((BYTE_ADDRESS)0x40031000);
 
-volatile unsigned int ADCdata = 0;
-volatile unsigned int averageADCvalue = 0;
-volatile unsigned int sumADCvalue = 0;
-volatile unsigned int ADCcount = 0;
+volatile WORD ADCdata = 0;
+volatile WORD averageADCvalue = 0;
+volatile WORD sumADCvalue = 0;
+volatile WORD ADCcount = 0;
 volatile double newTimerValue = 0;
-volatile unsigned int newFreqValue = 0;
+volatile WORD newFreqValue = 0;
+volatile char stringBuffer[40];
 
 static const int sineWave[40] = {512,592,670,744,813,874,926,968,998,1017,1023,1017,998,968,926,874,813,744,670,592,512,432,354,280,211,150,98,56,26,7,0,7,26,56,98,150,211,280,354,432};
 volatile unsigned char sineCount = 0;	
 	
 void ADC0Seq0_Handler(void);
-unsigned char* short2charArray(unsigned int frequency);
 void Timer1A_Handler(void);
 	
 int main(void)
 {
-	ssi = malloc(sizeof(*ssi));
+	startScreen();
+	println("hello");
+	setBackgroundColor(red);
+	//ssi = malloc(sizeof(*ssi)); <-- new_SSIMasterModule allocates memory space. This statement would result in a memory leak.	
 	ssi = new_SSIMasterModule(0, FREESCALE, 1000000, 16, false, true, true);
 	setSysClkTo_80MHz();
 	
@@ -35,13 +41,12 @@ int main(void)
 	
 	while(1)
 	{		
-					
+		println("hello");
 	}		
 }
 
 void ADC0Seq0_Handler(void)
 {	
-	unsigned char* string;
 	ADCdata = read_word(ADC0, 0x048); // get adc data
 	ADCcount++;
 	sumADCvalue += ADCdata;
@@ -57,40 +62,15 @@ void ADC0Seq0_Handler(void)
 		// write new timer load value
 		updateCount((int)(newTimerValue));
 		// write new frequency to LCD
-		string = short2charArray(newFreqValue);
-		// clearText();
-		// println(string,7);
+		sprintf((char *)stringBuffer, "%u Hz", newFreqValue);
+		clearText();
+		println(stringBuffer);
 	}
 			
 	write_word(ADC0, 0x00C, 0xFF); // clear interrupt
 }
 
-unsigned char* short2charArray(unsigned int frequency)
-{
-	unsigned char charArray[7];
-	unsigned char* string = charArray;
-	unsigned char temp = 0;
-	
-	temp  = frequency/1000;
-	charArray[0] = temp + 0x30;
-	frequency = frequency % 1000;
-	
-	temp = frequency/100;
-	charArray[1] = temp + 0x30;
-	frequency = frequency%100;
-	
-	temp = frequency/10;
-	charArray[2] = temp + 0x30;
-	frequency = frequency%10;
-	
-	charArray[3] = frequency + 0x30;
-	
-	charArray[4] = 0x20;
-	charArray[5] = 0x48;
-	charArray[6] = 0x7A;	
-	
-	return string;
-}
+
 
 void Timer1A_Handler(void)
 {

@@ -126,9 +126,9 @@ void clearText(void){
 	removeLineByPointer(Screen.tail);
 	clearLCD(getColorCode(black));
 }
-void println(BYTE* string, WORD length){
+void println(volatile char* string){
 	int i = 0;
-	for(; i < length; ++i){
+	for(; i < strlen((char*)string); ++i){
 		if(string[i] == 0x0A)
 			addLine(true);
 		else
