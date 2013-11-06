@@ -6,7 +6,7 @@
 static BYTE_ADDRESS CORE_PERIPHERALS = ((BYTE_ADDRESS)0xE000E000);
 static BYTE_ADDRESS SYSTEM_CONTROL = ((BYTE_ADDRESS)0x400FE000);
 static BYTE_ADDRESS TIMER0 = ((BYTE_ADDRESS)0x40030000);
-static BYTE_ADDRESS GPIOE = ((BYTE_ADDRESS)0x40024000); 
+static BYTE_ADDRESS GPIOD = ((BYTE_ADDRESS)0x40007000); 
 static BYTE_ADDRESS ADC0 = ((BYTE_ADDRESS)0x40038000); 
 
 static const HALF_WORD RCGCTIMER = 0x604;//TIMER run mode clock gating control
@@ -35,14 +35,14 @@ void initADC02msWithInterrupt(void)
 	
 	// enable TIMER0A sysclk
 	readModWrite_byte(SYSTEM_CONTROL, RCGCTIMER, 0x01,ENABLE); 
-	// enable GPIOF sysclk
-	readModWrite_byte(SYSTEM_CONTROL, RCGCGPIO, 0x10,ENABLE); 
+	// enable GPIOD sysclk
+	readModWrite_byte(SYSTEM_CONTROL, RCGCGPIO, 0x08,ENABLE); 
 	// enable ADC0 sysclk
 	readModWrite_byte(SYSTEM_CONTROL, RCGCADC, 0x01,ENABLE); 
 	// configure GPIOF for ADC
-	readModWrite_byte(GPIOE, 0x420, 0x08,ENABLE);
-	readModWrite_byte(GPIOE, 0x51C, 0x08,DISABLE);
-	readModWrite_byte(GPIOE, 0x528, 0x08,ENABLE);
+	readModWrite_byte(GPIOD, 0x420, 0x08,ENABLE);
+	readModWrite_byte(GPIOD, 0x51C, 0x08,DISABLE);
+	readModWrite_byte(GPIOD, 0x528, 0x08,ENABLE);
 	
 	// configure TIMER0A for 2ms TAOTE enabled
 	// disable TIMER0A
