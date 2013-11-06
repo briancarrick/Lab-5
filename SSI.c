@@ -269,3 +269,7 @@ HALF_WORD SSI_getNextValueFromRXQueue(unsigned char moduleNumber)
 	return read_halfWord(SSI_modules[moduleNumber]->moduleAddress, SSIDR);
 }
 
+void SSI_sendData(struct SSI_module* module, HALF_WORD msg)
+{
+	write_halfWord(module->moduleAddress, SSIDR, msg);
+}

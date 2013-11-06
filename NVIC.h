@@ -74,7 +74,7 @@ struct NVIC_interruptModule_ADC
     unsigned char numInterrupts;
     struct NVIC_interruptModule* base;
     bool DigitalComparatorInterrupt;
-    bool 
+    //bool 
 };
 struct NVIC_GPIOInterruptDirectory
 {

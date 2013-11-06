@@ -457,6 +457,21 @@
               <FileType>1</FileType>
               <FilePath>.\SYSTIC.c</FilePath>
             </File>
+            <File>
+              <FileName>ADC.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\ADC.c</FilePath>
+            </File>
+            <File>
+              <FileName>DAC.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\DAC.c</FilePath>
+            </File>
+            <File>
+              <FileName>DACTimer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\DACTimer.c</FilePath>
+            </File>
           </Files>
         </Group>
       </Groups>

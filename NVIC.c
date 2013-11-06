@@ -461,7 +461,7 @@ void UART7_Handler(void) { NVIC_callAppropriateUARTHandle(7);}
 //GPTM
 void Timer0A_Handler(void){ NVIC_callAppropriateGPTMHandle(0, 0);}
 void Timer0B_Handler(void){ NVIC_callAppropriateGPTMHandle(0, 1);}
-void Timer1A_Handler(void){ NVIC_callAppropriateGPTMHandle(1, 0);}
+//void Timer1A_Handler(void){ NVIC_callAppropriateGPTMHandle(1, 0);}
 void Timer1B_Handler(void){ NVIC_callAppropriateGPTMHandle(1, 1);}
 void Timer2A_Handler(void){ NVIC_callAppropriateGPTMHandle(2, 0);}
 void Timer2B_Handler(void){ NVIC_callAppropriateGPTMHandle(2, 1);}
@@ -484,7 +484,7 @@ void WideTimer4B_Handler(void){ NVIC_callAppropriateGPTMHandle(10, 1);}
 void WideTimer5A_Handler(void){ NVIC_callAppropriateGPTMHandle(11, 0);}
 void WideTimer5B_Handler(void){ NVIC_callAppropriateGPTMHandle(11, 1);}
 
-void ADC0Seq0_Handler(void){ ADC_callAppropriateADCHandle(0, 0);}
+//void ADC0Seq0_Handler(void){ ADC_callAppropriateADCHandle(0, 0);}
 void ADC0Seq1_Handler(void){ ADC_callAppropriateADCHandle(0, 1);}
 void ADC0Seq2_Handler(void){ ADC_callAppropriateADCHandle(0, 2);}
 void ADC0Seq3_Handler(void){ ADC_callAppropriateADCHandle(0, 3);}
