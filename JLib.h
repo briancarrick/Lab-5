@@ -5,6 +5,8 @@ Author: Jason Cronquist
 #ifndef JLib_h
 #define JLib_h
 
+#define LANDSCAPE
+
 typedef enum {false, true} bool;
 typedef void (*Function)(unsigned char); 
 #define ENABLE true

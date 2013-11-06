@@ -4,23 +4,34 @@
 #define LCD_H
 
 #include "SSI.h"
+#include "font8x8.h"
 #include "JLib.h"
 #include "SYSTIC.h"
 
-// 16-bit RGB values for some common colors
-#define white   0xFFFF
-#define black   0x0000
-#define grey    0xF7DE
-#define blue    0x001F
-#define red     0xF800
-#define magenta 0xF81F
-#define green   0x07E0
-#define cyan    0x7FFF
-#define yellow  0xFFE0
+typedef enum {white, black, grey, blue, red, magenta, green, cyan, yellow} Color;
 
+typedef enum {Font8x8, Font8x8_basic, BigFont, Terminus, Ubuntu} Font;
 
-// functions to init LCD and GPIO
-void lcdPortConfig(void); //setup GPIO pins
+struct Vector2{
+	HALF_WORD x;
+	HALF_WORD y;
+};
+struct font_module{
+	Font fontType;
+	BYTE * characterTable;
+	BYTE height;
+	BYTE width;
+	HALF_WORD foreground;
+	HALF_WORD background;
+};
+struct print_Character{
+	BYTE c;
+	BYTE xPos;
+	BYTE yPos;
+	BYTE* font;
+};
+
+// function to init LCD and GPIO
 void lcdInit(void); //base LCD config
 
 // functions to send cmd/data to LCD
@@ -37,4 +48,6 @@ void setCursorIndex(unsigned int index); //set current pixel to ind (use index t
 void makeBox(unsigned short x,unsigned short y,unsigned short rgb); //create a solid box @x,y of color given by rgb
 void makeOpenBox(unsigned short x,unsigned short y,unsigned short rgb); //create outline of box @x,y of color given by rgb
 
+//Functions for Chars
+void drawAsciiChar(BYTE c, struct Vector2* coord, struct font_module* font);
 #endif

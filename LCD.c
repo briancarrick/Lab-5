@@ -1,7 +1,12 @@
 #include "LCD.H"
 
-#define HEIGHT 
-#define WIDTH
+#ifdef LANDSCAPE
+	#define P_HEIGHT 240
+	#define P_WIDTH 320
+#else
+	#define P_HEIGHT 320
+	#define P_WIDTH 240
+#endif
 
 //Port E
 #define ctrlPort ((BYTE_ADDRESS)0x40024000)
@@ -31,6 +36,27 @@
 #define YELLOW_LED  ((volatile unsigned char *) 0x42087F9C)
 
 
+/////////////////////////////////////////////////////////////////////////
+// lcdPortConfig
+// Setup GPIO for LCD Screen
+// Inputs:
+//		NONE
+// Outputs:
+//		NONE
+/////////////////////////////////////////////////////////////////////////
+void lcdPortConfig(void) //setup GPIO pins
+{
+	GPIO_initPortClocksWithMap(0x17, ENABLE);
+	GPIO_initPortPinsForIO(GPIO_getPortAddress('a'), 0xE0, IO_OUT, IO_PULL_UP, IO_OPEN_DRAIN);
+	GPIO_initPortPinsForIO(GPIO_getPortAddress('b'), 0xFF, IO_OUT, IO_PULL_UP, false);
+	GPIO_initPortPinsForIO(GPIO_getPortAddress('c'), 0x70, IO_OUT, IO_PULL_UP, false);
+	GPIO_initPortPinsForIO(GPIO_getPortAddress('e'), 0x3E, IO_OUT, IO_PULL_UP, false);
+	CS[0] = 1;	// set chip select to high
+	RD[0] = 1;
+	WR[0] = 0;
+}
+// End lcdPortConfig ///////////////////////////////////////////////////////////
+
 
 /////////////////////////////////////////////////////////////////////////
 // lcdInit
@@ -42,6 +68,7 @@
 /////////////////////////////////////////////////////////////////////////
 void lcdInit(void)
 {
+	lcdPortConfig();
 	//It may be a good idea to reset the LCD and turn on the backlight here (can be done using GPIO)
 	//LCD reset
 	//backlight
@@ -93,30 +120,13 @@ void lcdInit(void)
 	writeReg(0x004e,0);                         // Set GDDRAM X address counter
 	
 	delayMS(50);
+	
+	#ifdef LANDSCAPE
+		writeReg(0x0011, 0x6068);
+	#endif
 }
 // End lcdInit ///////////////////////////////////////////////////////////
 
-
-/////////////////////////////////////////////////////////////////////////
-// lcdPortConfig
-// Setup GPIO for LCD Screen
-// Inputs:
-//		NONE
-// Outputs:
-//		NONE
-/////////////////////////////////////////////////////////////////////////
-void lcdPortConfig(void) //setup GPIO pins
-{
-	GPIO_initPortClocksWithMap(0x17, ENABLE);
-	GPIO_initPortPinsForIO(GPIO_getPortAddress('a'), 0xE0, IO_OUT, IO_PULL_UP, IO_OPEN_DRAIN);
-	GPIO_initPortPinsForIO(GPIO_getPortAddress('b'), 0xFF, IO_OUT, IO_PULL_UP, false);
-	GPIO_initPortPinsForIO(GPIO_getPortAddress('c'), 0x70, IO_OUT, IO_PULL_UP, false);
-	GPIO_initPortPinsForIO(GPIO_getPortAddress('e'), 0x3E, IO_OUT, IO_PULL_UP, false);
-	CS[0] = 1;	// set chip select to high
-	RD[0] = 1;
-	WR[0] = 0;
-}
-// End lcdPortConfig ///////////////////////////////////////////////////////////
 
 
 //****************************************************************
@@ -220,8 +230,13 @@ void clearLCD(unsigned short rgb) //set entire LCD to the color rgb (useful for 
 /////////////////////////////////////////////////////////////////////////
 void setCursor(unsigned short x,unsigned short y) //set current pixel to x,y
 {
-	writeReg(0x004f,x);                         // Set GDDRAM Y address counter
-	writeReg(0x004e,y);                         // Set GDDRAM X address counter
+	#ifdef LANDSCAPE
+		writeReg(0x004f,x);
+		writeReg(0x004e,(P_HEIGHT-y)-1);
+	#else
+		writeReg(0x004f,y);                         // Set GDDRAM Y address counter
+		writeReg(0x004e,x);                         // Set GDDRAM X address counter
+	#endif
 }
 // End setCursor ///////////////////////////////////////////////////////////
 
@@ -240,7 +255,34 @@ void setCursorIndex(unsigned int index) //set current pixel to ind (use index to
 	
 }
 // End setCursorIndex ///////////////////////////////////////////////////////////
- 
+
+void clearAsciiChar(struct Vector2* coord, struct font_module* font){
+	WORD i = coord->x;
+	WORD j = coord->y;
+	for(;i  <font->width+coord->x;++i){
+		setCursor(i,j);
+		writeCmd(0x0022);
+		for(; j < font->height+(coord->y);++j)
+			writeDat(font->background);
+	}
+}
+
+void drawAsciiChar(BYTE c, struct Vector2* coord, struct font_module* font){
+	WORD i = 0;
+	WORD j = 0;
+	
+	setCursor(coord->x,coord->y);
+	for(i= 0; i < font->height;++i){
+		writeCmd(0x0022);
+		for(j = 0; j < font->width;++j){
+			if(f8x8_getPixel(j,i,c))
+				writeDat(font->foreground);
+			else
+				writeDat(font->background);
+		}
+		setCursor(coord->x,++coord->y);
+	}
+}
 
 //****************************************************************
 // functions to draw boxes
