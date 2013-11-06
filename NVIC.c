@@ -419,17 +419,20 @@ void NVIC_callAppropriateGPTMHandle(unsigned char timerNumber, unsigned char aOr
 	}
 	NVIC_setPending(GPTM_InterruptNumber[timerNumber]+((aOrb)?1:0), DISABLE);
 }
+//Untested, incomplete
 void ADC_callAppropriateADCHandle(unsigned char moduleNumber, unsigned char sequenceNumber){
-    unsigned char i;
+  unsigned char i;
+	unsigned char hashBit;
 	unsigned char bit = 4;
-	HALF_WORD mis = read_halfWord(ADC_address[moduleNumber], ADCISC);
-	for(i = 0; i < 4; ++i)
+	WORD mis = read_word(ADC_address[moduleNumber], ADCISC);
+	for(i = 0; i < 17; ++i)
 	{
 		if((mis&0x01) == 0x01)
 			bit = i;
 		mis = mis>>1;
 	}
-	if(bit < 4)
+	hashBit = (bit == 16)?4:bit;
+	if(hashBit < 5)
 	{
 		setBit_word(ADC_address[moduleNumber], ADCISC, bit, ENABLE);
 		ADC_moduleInterrupts[moduleNumber][sequenceNumber].adcInterrupts[bit]((moduleNumber*4)+sequenceNumber);
