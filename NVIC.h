@@ -67,14 +67,14 @@ struct NVIC_interruptModule_GPTM
 };
 struct NVIC_interruptModule_ADC
 {
-    unsigned char moduleNumber;
-    unsigned char sequenceNumber;
-    BYTE_ADDRESS moduleAddress;
-    
-    unsigned char numInterrupts;
-    struct NVIC_interruptModule* base;
-    bool DigitalComparatorInterrupt;
-    //bool 
+  unsigned char moduleNumber;
+  unsigned char sequenceNumber;
+  BYTE_ADDRESS moduleAddress;
+  
+  unsigned char numInterrupts;
+  struct NVIC_interruptModule* base;
+  bool DigitalComparatorInterrupt;
+	//more interrupt options required
 };
 struct NVIC_GPIOInterruptDirectory
 {
