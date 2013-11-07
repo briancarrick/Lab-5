@@ -46,8 +46,7 @@
 /////////////////////////////////////////////////////////////////////////
 void lcdPortConfig(void) //setup GPIO pins
 {
-	GPIO_initPortClocksWithMap(0x17, ENABLE);
-	GPIO_initPortPinsForIO(GPIO_getPortAddress('a'), 0xE0, IO_OUT, IO_PULL_UP, IO_OPEN_DRAIN);
+	GPIO_initPortClocksWithMap(0x17, ENABLE);	
 	GPIO_initPortPinsForIO(GPIO_getPortAddress('b'), 0xFF, IO_OUT, IO_PULL_UP, false);
 	GPIO_initPortPinsForIO(GPIO_getPortAddress('c'), 0x70, IO_OUT, IO_PULL_UP, false);
 	GPIO_initPortPinsForIO(GPIO_getPortAddress('e'), 0x3E, IO_OUT, IO_PULL_UP, false);
