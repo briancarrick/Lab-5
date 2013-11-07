@@ -54,7 +54,7 @@ void initADC02msWithInterrupt(void)
 	// configure ADC0
 	write_word(ADC0, 0x000, 0);	// disable ADC SS
 	write_word(ADC0, 0x014, 0x0005);	// select timer as trigger source
-	write_word(ADC0, 0x040, 0);	// select the ADC sample sequence
+	write_word(ADC0, 0x040, 4);	// select the ADC sample sequence
 	write_word(ADC0, 0x044, 0x06);	// select the ADC sample sequence to end on first sample and generate an interrupt
 	write_word(ADC0, 0x008, 0x01);	// enable interrupts to get adc data
 	write_word(ADC0, 0x000, 0x01);	// enable ADC SS
