@@ -16,6 +16,7 @@ struct ScreenLine{
 	struct ScreenLine* next;
 	struct ScreenLine* prev;
 	BYTE charSpace[WIDTH];
+	HALF_WORD length;
 };
 
 static struct {
@@ -46,9 +47,10 @@ HALF_WORD getXStartPixel(WORD xCoord){
 HALF_WORD getYStartPixel(WORD yCoord){
 	return (HALF_WORD)(yCoord * CHAR_HEIGHT);
 }
-void initLineToNull(BYTE* line){
+void initLineToNull(BYTE* line, HALF_WORD count){
 	int i = 0;
-	for(; i < WIDTH; ++i)
+	count = (count == 0)?WIDTH:count;
+	for(; i < count; ++i)
 		line[i] = NULL;
 }
 HALF_WORD getDepth(struct ScreenLine* line){
@@ -60,7 +62,8 @@ HALF_WORD getDepth(struct ScreenLine* line){
 void removeLineByPointer(struct ScreenLine* line){
 	if(Screen.head == Screen.tail){
 		Screen.curLoc = 0;
-		initLineToNull(line->charSpace);
+		initLineToNull(line->charSpace, line->length);
+		line->length = 0;
 		return;
 	}
 	else if(line == Screen.head){
@@ -80,7 +83,7 @@ void removeLineByPointer(struct ScreenLine* line){
 void removeLineByNumber(HALF_WORD lineNumber){
 	if(lineNumber == 0){
 		Screen.curLoc = 0;
-		initLineToNull(Screen.head->charSpace);
+		initLineToNull(Screen.head->charSpace, Screen.head->length);
 	}
 }
 void removeLastLine(bool alterCurLoc){
@@ -90,7 +93,7 @@ void drawLine(struct ScreenLine* line){
 	struct Vector2* coord = malloc(sizeof *coord);
 	WORD x,y;
 	y = getYStartPixel(getDepth(line));
-	for(x=0; x < WIDTH;++x){
+	for(x=0; x < line->length;++x){
 		coord->x = getXStartPixel(x);coord->y = y;
 		drawAsciiChar(line->charSpace[x], coord, &Screen.font);
 	}
@@ -98,8 +101,7 @@ void drawLine(struct ScreenLine* line){
 }
 void addLine(bool alterCurLoc){
 	drawLine(Screen.tail);
-	if(alterCurLoc)
-	{
+	if(alterCurLoc){
 		Screen.curLoc += WIDTH;
 		Screen.curLoc -= (Screen.curLoc%WIDTH);
 	}
@@ -112,6 +114,14 @@ void advanceCurLoc(void){
 	if(Screen.curLoc%WIDTH == 0)
 		addLine(false);
 }
+void whiteOutLine(struct ScreenLine* line){
+	struct Vector2* pos = malloc(sizeof *pos);
+	struct Vector2* size = malloc(sizeof *size);
+	pos->x  = 0;pos->y = getYStartPixel(getDepth(line));
+	size->x = line->length*CHAR_WIDTH;size->y = CHAR_HEIGHT;
+	makeBox(pos, size, Screen.font.background);
+	free(pos); free(size);
+}
 //Globally Scoped Functions
 void setTextColor(Color color){
 	Screen.font.foreground = ColorTable[color];
@@ -121,18 +131,21 @@ void setBackgroundColor(Color color){
 }
 void clearText(void){
 	while(Screen.head != Screen.tail){
+		whiteOutLine(Screen.tail);
 		removeLineByPointer(Screen.tail);
 	}
+	whiteOutLine(Screen.tail);
 	removeLineByPointer(Screen.tail);
-	clearLCD(getColorCode(black));
 }
-void println(volatile char* string){
+void println(char* string){
 	int i = 0;
-	for(; i < strlen((char*)string); ++i){
+	for(; i < strlen(string); ++i){
 		if(string[i] == 0x0A)
 			addLine(true);
-		else
+		else{
 			Screen.tail->charSpace[Screen.curLoc%WIDTH] = string[i];
+			Screen.tail->length++;
+		}
 		advanceCurLoc();
 	}
 	addLine(true);
