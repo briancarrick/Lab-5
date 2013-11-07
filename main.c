@@ -45,8 +45,7 @@ int main(void)
 		//println("hello");
 		if(updateText)
 		{
-			clearText();			
-			//clearLCD(black);
+			clearText();		
 			println(stringBuffer);
 			updateText = false;
 		}
