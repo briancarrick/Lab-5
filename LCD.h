@@ -45,7 +45,7 @@ void setCursor(unsigned short x,unsigned short y); //set current pixel to x,y
 void setCursorIndex(unsigned int index); //set current pixel to ind (use index to address pixel instead of x,y)
 
 // functions to draw boxes
-void makeBox(unsigned short x,unsigned short y,unsigned short rgb); //create a solid box @x,y of color given by rgb
+void makeBox(struct Vector2* pos, struct Vector2* size, HALF_WORD rgb); //create a solid box @x,y of color given by rgb
 void makeOpenBox(unsigned short x,unsigned short y,unsigned short rgb); //create outline of box @x,y of color given by rgb
 
 //Functions for Chars

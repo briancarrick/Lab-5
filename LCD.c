@@ -298,26 +298,17 @@ void drawAsciiChar(BYTE c, struct Vector2* coord, struct font_module* font){
 // Outputs:
 //		NONE
 /////////////////////////////////////////////////////////////////////////
-void makeBox(unsigned short x,unsigned short y,unsigned short rgb) //create a solid box @x,y of color given by rgb
-{
-	unsigned int boxRow = 0;
-	unsigned int boxCol = 0;
-	
-	
-	setCursor(x,y);
-	
-	for(boxRow = 0; boxRow < 80; boxRow++)
-	{		
+void makeBox(struct Vector2* pos, struct Vector2* size,unsigned short rgb){ //create a solid box @x,y of color given by rgb
+	WORD x = 0;
+	WORD y = 0;
+	setCursor(pos->x,pos->y);
+	for(y = 0; y < 80; ++y){		
 		writeCmd(0x0022); // tell lcd to expect pixel data for current pixel address
-		for(boxCol = 0; boxCol < 80; boxCol++)
-		{
-			
+		for(x = 0; x < 80; ++x){
 			writeDat(rgb); // write box pixels to rgb color
 		}
-		setCursor(x++,y); // set cursor to next row in box
+		setCursor(pos->x,++pos->y); // set cursor to next row in box
 	}
-		
-	
 }
 // End makeBox ///////////////////////////////////////////////////////////
 
