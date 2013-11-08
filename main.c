@@ -61,13 +61,13 @@ void ADC0Seq0_Handler(void)
 	
 	if(ADCcount == 250)
 	{		
-		newTimerValue = (4.39453125)*averageADCvalue + 2000;
-		newFreqValue = (-0.05)*newTimerValue + 1100                                                                                                                                                                                                                                                                                                                                                                        ;
+		newFreqValue = (0.2197802197)*averageADCvalue + 100.75;
+		newTimerValue = ((1/(40*newFreqValue)) * 80000000);                                                                                                                                                                                                                                                                                                                                                       ;
 		ADCcount = 0;
 		averageADCvalue = 0;
 		sumADCvalue = 0;
 		// write new timer load value
-		updateCount((int)(newTimerValue));
+		updateCount((int)newTimerValue);
 		// write new frequency to LCD
 		sprintf((char *)stringBuffer, "%u Hz", (int)newFreqValue);
 		updateText = true;
