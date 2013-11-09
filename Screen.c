@@ -132,6 +132,7 @@ void replaceLastLine(char* string){
 			printChar(' ', curLoc);
 		curLoc++;
 	}
+	Screen.curLoc = startOfThisLine(Screen.curLoc);
 }
 HALF_WORD getColorCode(Color color){
 	return ColorTable[color];
