@@ -47,6 +47,8 @@ WORD startOfNextLine(WORD position){
 WORD startOfThisLine(WORD position){
 	if(position%WIDTH == 0)
 		position--;
+	if(position < WIDTH)
+		return 0;
 	return position - (position%WIDTH);
 }
 void blankOut(WORD startPosition, WORD endPosition){
@@ -126,13 +128,17 @@ void replaceLastLine(char* string){
 	curLoc = i+startOfThisLine(Screen.curLoc);
 	for(;i<WIDTH;++i){
 		if(i<strlen(string)){
-			if(Screen.charSpace[curLoc] != string[i])
+			if(Screen.charSpace[curLoc] != string[i]){
+				Screen.charSpace[curLoc] = string[i];
 				printChar(string[i], curLoc);
-		}else if(Screen.charSpace[curLoc]!=0)
+			}
+		}else if(Screen.charSpace[curLoc]!=0){
+			Screen.charSpace[curLoc] = 0;
 			printChar(' ', curLoc);
+		}
 		curLoc++;
 	}
-	Screen.curLoc = startOfThisLine(Screen.curLoc);
+	Screen.curLoc = startOfNextLine(startOfThisLine(curLoc));
 }
 HALF_WORD getColorCode(Color color){
 	return ColorTable[color];

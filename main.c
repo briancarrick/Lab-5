@@ -21,6 +21,8 @@ volatile double newTimerValue = 0;
 volatile double newFreqValue = 0;
 char stringBuffer[40];
 volatile bool updateText = false;
+volatile BYTE spinCount = 0;
+volatile BYTE spinSymbol[1];
 
 static const int sineWave[40] = {512,592,670,744,813,874,926,968,998,1017,1023,1017,998,968,926,874,813,744,670,592,512,432,354,280,211,150,98,56,26,7,0,7,26,56,98,150,211,280,354,432};
 volatile unsigned char sineCount = 0;	
@@ -57,6 +59,25 @@ void ADC0Seq0_Handler(void)
 	
 	if(ADCcount == 250)
 	{		
+		switch(spinCount){
+			case 0:
+				spinSymbol[0] = '|';
+				break;
+			case 1:
+				spinSymbol[0] = '/';
+				break;
+			case 2:
+				spinSymbol[0] = '-';
+				break;
+			case 3:
+				spinSymbol[0]  = '\\';
+				break;
+			default:
+				break;
+		}
+		spinCount++;
+		if(spinCount > 3)
+			spinCount = 0;
 		newFreqValue = (0.2197802197)*averageADCvalue + 100.75;
 		newTimerValue = ((1/(40*newFreqValue)) * 80000000);                                                                                                                                                                                                                                                                                                                                                       ;
 		ADCcount = 0;
@@ -65,7 +86,8 @@ void ADC0Seq0_Handler(void)
 		// write new timer load value
 		updateCount((int)newTimerValue);
 		// write new frequency to LCD
-		sprintf((char *)stringBuffer, "%u Hz", (int)newFreqValue);
+		sprintf((char *)stringBuffer, "%u Hz; Measuring ", (int)newFreqValue);
+		strcat(stringBuffer, (char*)spinSymbol);
 		updateText = true;
 		
 	}
