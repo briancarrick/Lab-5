@@ -12,10 +12,6 @@ typedef enum {white, black, grey, blue, red, magenta, green, cyan, yellow} Color
 
 typedef enum {Font8x8, Font8x8_basic, BigFont, Terminus, Ubuntu} Font;
 
-struct Vector2{
-	HALF_WORD x;
-	HALF_WORD y;
-};
 struct font_module{
 	Font fontType;
 	BYTE * characterTable;
@@ -50,4 +46,6 @@ void makeOpenBox(unsigned short x,unsigned short y,unsigned short rgb); //create
 
 //Functions for Chars
 void drawAsciiChar(BYTE c, struct Vector2* coord, struct font_module* font);
+
+
 #endif

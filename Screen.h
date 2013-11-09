@@ -14,6 +14,8 @@ void clearText(void);
 
 HALF_WORD getColorCode(Color color);
 
+void replaceLastLine(char* string);
+
 void redrawText(void);
 
 #endif

@@ -12,17 +12,9 @@
 
 const HALF_WORD ColorTable[] = {0xFFFF,0x0000,0xF7DE,0x001F,0xF800,0xF81F,0x07E0,0x7FFF,0xFFE0};
 
-struct ScreenLine{
-	struct ScreenLine* next;
-	struct ScreenLine* prev;
-	BYTE charSpace[WIDTH];
-	HALF_WORD length;
-};
-
 static struct {
 	WORD curLoc;
-	struct ScreenLine* head;
-	struct ScreenLine* tail;
+	BYTE charSpace[HEIGHT*WIDTH];
 	
 	WORD yOffset;
 	struct font_module font;
@@ -31,96 +23,64 @@ static struct {
 void startScreen(void){
 	lcdInit();
 	Screen.curLoc = 0;
-	Screen.head = malloc (sizeof *Screen.head);
-	Screen.head->next = NULL;
-	Screen.head->prev = NULL;
-	Screen.tail = Screen.head;
 	Screen.font.background = getColorCode(black);
 	Screen.font.foreground = getColorCode(green);
 	Screen.font.fontType = Font8x8;
 	Screen.font.height = CHAR_HEIGHT;
 	Screen.font.width = CHAR_WIDTH;
 }
-HALF_WORD getXStartPixel(WORD xCoord){
-	return (HALF_WORD)(xCoord*CHAR_WIDTH);
+HALF_WORD getPixelYCoordinate(WORD position){
+	return (position/WIDTH)*CHAR_HEIGHT;
 }
-HALF_WORD getYStartPixel(WORD yCoord){
-	return (HALF_WORD)(yCoord * CHAR_HEIGHT);
+HALF_WORD getPixelXCoordinate(WORD position){
+	return (position%WIDTH)*CHAR_WIDTH;
 }
-void initLineToNull(BYTE* line, HALF_WORD count){
-	int i = 0;
-	count = (count == 0)?WIDTH:count;
-	for(; i < count; ++i)
-		line[i] = NULL;
+struct Vector2* getPixelCoordinate(WORD position){
+	struct Vector2* retVal = malloc(sizeof *retVal);
+	retVal->x = getPixelXCoordinate(position);
+	retVal->y = getPixelYCoordinate(position);
+	return retVal;
 }
-HALF_WORD getDepth(struct ScreenLine* line){
-	if(line == Screen.head)
-		return 0;
-	else
-		return (getDepth(line->prev)+1);
+WORD startOfNextLine(WORD position){
+	return (position+WIDTH)-(position%WIDTH);
 }
-void removeLineByPointer(struct ScreenLine* line){
-	if(Screen.head == Screen.tail){
-		Screen.curLoc = 0;
-		initLineToNull(line->charSpace, line->length);
-		line->length = 0;
-		return;
+WORD startOfThisLine(WORD position){
+	if(position%WIDTH == 0)
+		position--;
+	return position - (position%WIDTH);
+}
+void blankOut(WORD startPosition, WORD endPosition){
+	WORD i = 0;
+	struct Vector2* startPxCoordinate;
+	struct Vector2* boxSize;
+	WORD numLines = (endPosition/WIDTH) - (startPosition/WIDTH);
+	if(startPosition > endPosition)
+		swap(startPosition, endPosition);
+	for(; i < numLines;i++){
+		startPxCoordinate = getPixelCoordinate(startPosition);
+		if(endPosition < startOfNextLine(startPosition)){
+			boxSize = new_Vector2
+				((getPixelXCoordinate(endPosition)+CHAR_WIDTH)-startPxCoordinate->x
+				,CHAR_HEIGHT
+				);
+		} else {
+			boxSize = new_Vector2
+				((getPixelXCoordinate((startOfNextLine(startPosition)-1))+CHAR_WIDTH)-startPxCoordinate->x
+				,CHAR_HEIGHT
+				);
+			startPosition = startOfNextLine(startPosition);
+		}
+		makeBox(startPxCoordinate, boxSize, Screen.font.background); 
+		free(startPxCoordinate);
+		free(boxSize);
 	}
-	else if(line == Screen.head){
-		Screen.head = Screen.head->next;
-		Screen.head->prev = NULL;
-	}
-	else if(line == Screen.tail){
-		Screen.tail = Screen.tail->prev;
-		Screen.tail->next = NULL;
-	}
-	else {
-		line->prev->next = line->next;
-		line->next->prev = line->prev;
-	}
-	free(line);
 }
-void removeLineByNumber(HALF_WORD lineNumber){
-	if(lineNumber == 0){
-		Screen.curLoc = 0;
-		initLineToNull(Screen.head->charSpace, Screen.head->length);
-	}
-}
-void removeLastLine(bool alterCurLoc){
-	removeLineByPointer(Screen.tail);
-}
-void drawLine(struct ScreenLine* line){
+void printChar(BYTE c, WORD position){
 	struct Vector2* coord = malloc(sizeof *coord);
-	WORD x,y;
-	y = getYStartPixel(getDepth(line));
-	for(x=0; x < line->length;++x){
-		coord->x = getXStartPixel(x);coord->y = y;
-		drawAsciiChar(line->charSpace[x], coord, &Screen.font);
-	}
-	free (coord);
-}
-void addLine(bool alterCurLoc){
-	drawLine(Screen.tail);
-	if(alterCurLoc){
-		Screen.curLoc += WIDTH;
-		Screen.curLoc -= (Screen.curLoc%WIDTH);
-	}
-	Screen.tail->next = malloc(sizeof *Screen.head);
-	Screen.tail->next->prev = Screen.tail;
-	Screen.tail = Screen.tail->next;
-}
-void advanceCurLoc(void){
-	Screen.curLoc++;
-	if(Screen.curLoc%WIDTH == 0)
-		addLine(false);
-}
-void whiteOutLine(struct ScreenLine* line){
-	struct Vector2* pos = malloc(sizeof *pos);
-	struct Vector2* size = malloc(sizeof *size);
-	pos->x  = 0;pos->y = getYStartPixel(getDepth(line));
-	size->x = line->length*CHAR_WIDTH;size->y = CHAR_HEIGHT;
-	makeBox(pos, size, Screen.font.background);
-	free(pos); free(size);
+	coord->x = (position%WIDTH)*8;
+	coord->y = (position/WIDTH)*8;
+	drawAsciiChar(c, coord, &Screen.font);
+	free(coord);
 }
 //Globally Scoped Functions
 void setTextColor(Color color){
@@ -129,35 +89,50 @@ void setTextColor(Color color){
 void setBackgroundColor(Color color){
 	Screen.font.background = ColorTable[color];
 }
+
 void clearText(void){
-	while(Screen.head != Screen.tail){
-		whiteOutLine(Screen.tail);
-		removeLineByPointer(Screen.tail);
-	}
-	whiteOutLine(Screen.tail);
-	removeLineByPointer(Screen.tail);
-}
-void println(char* string){
 	int i = 0;
-	for(; i < strlen(string); ++i){
-		if(string[i] == 0x0A)
-			addLine(true);
-		else{
-			Screen.tail->charSpace[Screen.curLoc%WIDTH] = string[i];
-			Screen.tail->length++;
-		}
-		advanceCurLoc();
+//	blankOut(0,Screen.curLoc);
+	for(; i < Screen.curLoc; ++i)
+	{
+		if(Screen.charSpace[i]!=NULL)
+			printChar(' ', i);
+		Screen.charSpace[i] = 0;
 	}
-	addLine(true);
-}
-void redrawText(void){
-	struct ScreenLine* line = Screen.head;
-	do{
-		drawLine(line);
-		line = line->next;
-	}while(line != NULL);
+	Screen.curLoc = 0;
 }
 
+void println(char* string){
+	int i = 0;
+	for(;i<strlen(string);++i){
+		if(string[i] == 0x0A){
+			Screen.curLoc += WIDTH;
+			Screen.curLoc -= (Screen.curLoc%WIDTH);
+		}else{
+			Screen.charSpace[Screen.curLoc] = string[i];
+			printChar(string[i], Screen.curLoc);
+			++Screen.curLoc;
+		}
+		if(Screen.curLoc >= WIDTH*HEIGHT)
+			Screen.curLoc = 0;
+	}
+	Screen.curLoc = startOfNextLine(Screen.curLoc);
+	if(Screen.curLoc >= WIDTH*HEIGHT)
+		Screen.curLoc = 0;
+}
+void replaceLastLine(char* string){
+	WORD i = 0;
+	WORD curLoc;
+	curLoc = i+startOfThisLine(Screen.curLoc);
+	for(;i<WIDTH;++i){
+		if(i<strlen(string)){
+			if(Screen.charSpace[curLoc] != string[i])
+				printChar(string[i], curLoc);
+		}else if(Screen.charSpace[curLoc]!=0)
+			printChar(' ', curLoc);
+		curLoc++;
+	}
+}
 HALF_WORD getColorCode(Color color){
 	return ColorTable[color];
 }

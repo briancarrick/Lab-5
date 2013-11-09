@@ -15,6 +15,13 @@ typedef struct {
 	unsigned int length;
 } String;
 
+#define swap(x,y) do \
+	{ unsigned char swap_temp[sizeof(x) == sizeof(y) ? (signed)sizeof(x) : -1]; \
+		memcpy(swap_temp,&y,sizeof(x)); \
+    memcpy(&y,&x,       sizeof(x)); \
+    memcpy(&x,swap_temp,sizeof(x)); \
+    } while(0);
+
 typedef enum {false, true} bool;
 typedef void (*Function)(unsigned char); 
 #define ENABLE true
@@ -54,5 +61,13 @@ void clearModWriteRange_word(BYTE_ADDRESS, unsigned short, WORD, bool, unsigned 
 void selectiveClearAndWrite_word(BYTE_ADDRESS, unsigned short, WORD clear, WORD write);
 void selectiveClearAndWrite_halfWord(BYTE_ADDRESS, unsigned short, HALF_WORD clear, HALF_WORD write);
 void selectiveClearAndWrite_byte(BYTE_ADDRESS, unsigned short, BYTE clear, BYTE write);
+
+
+struct Vector2{
+	HALF_WORD x;
+	HALF_WORD y;
+};
+
+struct Vector2* new_Vector2(HALF_WORD x, HALF_WORD y);
 
 #endif

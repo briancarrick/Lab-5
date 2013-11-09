@@ -91,3 +91,10 @@ void selectiveClearAndWrite_byte(BYTE_ADDRESS port, unsigned short offset, BYTE 
 	((WORD_ADDRESS)port)[offset/4] = ((((WORD_ADDRESS)port)[offset/4]&(((WORD)(~clear_8bit))<<(offset%4)))|(((WORD)write_8bit)<<(offset%4)));
 }
 
+struct Vector2* new_Vector2(HALF_WORD x, HALF_WORD y){
+	struct Vector2* retVal = malloc(sizeof *retVal);
+	retVal->x = x;
+	retVal->y = y;
+	return retVal;
+}
+

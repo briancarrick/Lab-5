@@ -120,6 +120,8 @@ void lcdInit(void)
 	
 	delayMS(50);
 	
+	clearLCD(0);
+	
 	#ifdef LANDSCAPE
 		writeReg(0x0011, 0x6068);
 	#endif
@@ -274,7 +276,9 @@ void drawAsciiChar(BYTE c, struct Vector2* coord, struct font_module* font){
 	for(i= 0; i < font->height;++i){
 		writeCmd(0x0022);
 		for(j = 0; j < font->width;++j){
-			if(f8x8_getPixel(j,i,c))
+			if(i==0 && j == 0)
+				writeDat(c);
+			else if(f8x8_getPixel(j,i,c))
 				writeDat(font->foreground);
 			else
 				writeDat(font->background);
@@ -301,9 +305,9 @@ void makeBox(struct Vector2* pos, struct Vector2* size,unsigned short rgb){ //cr
 	WORD x = 0;
 	WORD y = 0;
 	setCursor(pos->x,pos->y);
-	for(y = 0; y < 80; ++y){		
+	for(y = 0; y < size->y; ++y){		
 		writeCmd(0x0022); // tell lcd to expect pixel data for current pixel address
-		for(x = 0; x < 80; ++x){
+		for(x = 0; x < size->x; ++x){
 			writeDat(rgb); // write box pixels to rgb color
 		}
 		setCursor(pos->x,++pos->y); // set cursor to next row in box
